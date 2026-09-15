@@ -1,0 +1,25 @@
+{
+  "name": "dating-app/backend",
+  "description": "Dating App Backend API",
+  "type": "project",
+  "require": {
+    "php": "^7.4|^8.0",
+    "ext-json": "*",
+    "ext-curl": "*",
+    "ext-pdo": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0",
+    "squizlabs/php_codesniffer": "^3.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/",
+      "Core\\": "core/"
+    }
+  },
+  "scripts": {
+    "serve": "php -S localhost:8000",
+    "test": "phpunit"
+  }
+}
