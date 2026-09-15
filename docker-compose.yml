@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: dating_app_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: dating_app
+      MYSQL_USER: dating_user
+      MYSQL_PASSWORD: dating_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - dating_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # PHP Backend
+  php:
+    image: php:8.1-fpm
+    container_name: dating_app_php
+    restart: always
+    working_dir: /app/backend
+    volumes:
+      - ./backend:/app/backend
+      - ./backend/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      DB_HOST: mysql
+      DB_NAME: dating_app
+      DB_USER: dating_user
+      DB_PASS: dating_password
+    networks:
+      - dating_network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # Nginx Web Server
+  nginx:
+    image: nginx:alpine
+    container_name: dating_app_nginx
+    restart: always
+    ports:
+      - "8000:80"
+    volumes:
+      - ./backend:/app/backend
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - dating_network
+    depends_on:
+      - php
+
+  # Node.js Chat Server
+  chat_server:
+    image: node:18-alpine
+    container_name: dating_app_chat
+    restart: always
+    working_dir: /app/chat-server
+    volumes:
+      - ./chat-server:/app/chat-server
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: mysql
+      DB_USER: dating_user
+      DB_PASS: dating_password
+      DATABASE: dating_app
+    command: npm start
+    networks:
+      - dating_network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # React Frontend (Development)
+  frontend:
+    image: node:18-alpine
+    container_name: dating_app_frontend
+    restart: always
+    working_dir: /app/frontend
+    volumes:
+      - ./frontend:/app/frontend
+    ports:
+      - "3001:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:8000/api
+      REACT_APP_CHAT_SERVER: http://localhost:3000
+    command: npm start
+    networks:
+      - dating_network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  dating_network:
+    driver: bridge
