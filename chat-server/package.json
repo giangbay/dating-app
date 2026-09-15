@@ -1,0 +1,28 @@
+{
+  "name": "dating-app-chat-server",
+  "version": "1.0.0",
+  "description": "Real-time chat server for Dating App",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "keywords": [
+    "socket.io",
+    "real-time",
+    "chat"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.5.4",
+    "mysql2": "^3.1.0",
+    "dotenv": "^16.0.3",
+    "cors": "^2.8.5",
+    "axios": "^1.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
